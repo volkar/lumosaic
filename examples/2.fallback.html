@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lumosaic Gallery Example</title>
+        <style>
+            :root {
+                --text: #a8b5c6;
+                --strong: #dde6f1;
+                --bg: #0d1016;
+                --pale: #c68ec8;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                margin: 0;
+                padding: 2rem;
+                line-height: 1.4;
+            }
+
+            h1 {
+                color: var(--strong);
+                margin-bottom: 0.5rem;
+            }
+
+            p {
+                color: var(--text);
+                margin-bottom: 2rem;
+            }
+
+            #gallery {
+                margin: 0 auto;
+                position: relative;
+            }
+        </style>
+
+        <link rel="stylesheet" href="../dist/lumosaic.css" />
+        <script src="../dist/lumosaic.js"></script>
+    </head>
+    <body>
+        <h1>Lumosaic Gallery Example</h1>
+        <p>This is a simple example of the Lumosaic gallery with no width and height provided. (fallback to square)</p>
+
+        <div id="gallery"></div>
+
+        <script>
+            async function initGallery() {
+                // Sample random images
+                const images = ["https://picsum.photos/700/700?random=1", "https://picsum.photos/561/700?random=2", "https://picsum.photos/700/472?random=3", "https://picsum.photos/560/700?random=4", "https://picsum.photos/700/466?random=5", "https://picsum.photos/560/700?random=6", "https://picsum.photos/700/467?random=7", "https://picsum.photos/700/467?random=8", "https://picsum.photos/700/526?random=9", "https://picsum.photos/700/465?random=10", "https://picsum.photos/523/700?random=11", "https://picsum.photos/700/700?random=12", "https://picsum.photos/700/467?random=13", "https://picsum.photos/700/467?random=14", "https://picsum.photos/467/700?random=15", "https://picsum.photos/700/700?random=16", "https://picsum.photos/561/700?random=17", "https://picsum.photos/700/472?random=18"]
+
+                // Initialize gallery with square fallback ratio
+                await new LumosaicGallery("gallery", images).init({
+                    fallbackWidth: 700,
+                    fallbackHeight: 700,
+                })
+            }
+
+            // Initialize when page loads
+            initGallery()
+        </script>
+    </body>
+</html>
