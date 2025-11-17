@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.0.0
+ * Lumosaic 1.0.1
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -7,8 +7,8 @@
  *
  * Released under the MIT License
  */
-class LumosaicGallery {
-    constructor(galleryId, imagesSource) {
+class Lumosaic {
+    constructor(galleryId, imagesSource, options = {}) {
         // Default config
         this.config = {
             rowHeightSM: 0.25,

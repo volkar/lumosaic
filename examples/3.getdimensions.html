@@ -52,7 +52,7 @@
                 const images = ["https://picsum.photos/700/700?random=1", "https://picsum.photos/561/700?random=2", "https://picsum.photos/700/472?random=3", "https://picsum.photos/560/700?random=4", "https://picsum.photos/700/466?random=5", "https://picsum.photos/560/700?random=6", "https://picsum.photos/700/467?random=7", "https://picsum.photos/700/467?random=8", "https://picsum.photos/700/526?random=9", "https://picsum.photos/700/465?random=10", "https://picsum.photos/523/700?random=11", "https://picsum.photos/700/700?random=12", "https://picsum.photos/700/467?random=13", "https://picsum.photos/700/467?random=14", "https://picsum.photos/467/700?random=15"]
 
                 // Initialize gallery with square fallback ratio
-                await new LumosaicGallery("gallery", images).init({
+                await new Lumosaic("gallery", images).init({
                     shouldRetrieveWidthAndHeight: true,
                 })
             }

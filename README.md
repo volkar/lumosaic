@@ -8,13 +8,13 @@ Lumosaic is a lightweight JavaScript library that automatically arranges photos 
 
 ## Features
 
-- **Intelligent Layout** - Automatically arranges images into perfectly aligned rows
-- **Responsive Design** - Adapts to different screen sizes with customizable row heights
-- **Flexible Input** - Supports arrays of objects, arrays of URLs, or existing DOM elements
-- **Auto Dimension Detection** - Automatically retrieves image dimensions from image files (PNG, JPEG, WebP)
-- **Highly Configurable** - Extensive options for customization
-- **Shuffle Support** - Built-in image shuffling functionality
-- **Lightweight** - No dependencies, pure vanilla JavaScript
+-   **Intelligent Layout** - Automatically arranges images into perfectly aligned rows
+-   **Responsive Design** - Adapts to different screen sizes with customizable row heights
+-   **Flexible Input** - Supports arrays of objects, arrays of URLs, or existing DOM elements
+-   **Auto Dimension Detection** - Automatically retrieves image dimensions from image files (PNG, JPEG, WebP)
+-   **Highly Configurable** - Extensive options for customization
+-   **Shuffle Support** - Built-in image shuffling functionality
+-   **Lightweight** - No dependencies, pure vanilla JavaScript
 
 ## Installation
 
@@ -23,14 +23,14 @@ Lumosaic is a lightweight JavaScript library that automatically arranges photos 
 Download the latest release from the [releases page](https://github.com/volkar/lumosaic/releases/latest) and include the files in your project:
 
 ```html
-<link rel="stylesheet" href="/lumosaic/lumosaic.css">
+<link rel="stylesheet" href="/lumosaic/lumosaic.css" />
 <script src="/lumosaic/lumosaic.js"></script>
 ```
 
 ### CDN (if available)
 
 ```html
-<link rel="stylesheet" href="https://cdn.example.com/lumosaic/lumosaic.css">
+<link rel="stylesheet" href="https://cdn.example.com/lumosaic/lumosaic.css" />
 <script src="https://cdn.example.com/lumosaic/lumosaic.js"></script>
 ```
 
@@ -51,7 +51,7 @@ const images = [
     { src: "https://picsum.photos/800/800?random=3", width: 800, height: 800 },
 ]
 
-new LumosaicGallery("lumosaic", images).init()
+new Lumosaic("lumosaic", images).init()
 ```
 
 That's it! Your gallery is ready.
@@ -69,7 +69,7 @@ const images = [
     { src: "https://picsum.photos/800/800?random=3", width: 800, height: 800 },
 ]
 
-new LumosaicGallery("lumosaic", images).init()
+new Lumosaic("lumosaic", images).init()
 ```
 
 ### Array of Strings
@@ -77,14 +77,10 @@ new LumosaicGallery("lumosaic", images).init()
 Using an array of image URLs. Width and height will be calculated automatically if the `shouldRetrieveWidthAndHeight` option is set to `true`:
 
 ```javascript
-const images = [
-    "https://picsum.photos/800/600?random=1",
-    "https://picsum.photos/600/800?random=2",
-    "https://picsum.photos/800/800?random=3",
-]
+const images = ["https://picsum.photos/800/600?random=1", "https://picsum.photos/600/800?random=2", "https://picsum.photos/800/800?random=3"]
 
-new LumosaicGallery("lumosaic", images).init({
-    shouldRetrieveWidthAndHeight: true
+new Lumosaic("lumosaic", images).init({
+    shouldRetrieveWidthAndHeight: true,
 })
 ```
 
@@ -103,7 +99,7 @@ Using existing images from a DOM element. The source element will be removed fro
 ```
 
 ```javascript
-new LumosaicGallery("lumosaic", "images").init()
+new Lumosaic("lumosaic", "images").init()
 ```
 
 You can also use data attributes for more control:
@@ -119,10 +115,10 @@ You can also use data attributes for more control:
 Customize the gallery by passing options to the `init` method:
 
 ```javascript
-new LumosaicGallery("lumosaic", images).init({
+new Lumosaic("lumosaic", images).init({
     maxRows: 2,
     gap: 10,
-    rowHeight: 0.2
+    rowHeight: 0.2,
 })
 ```
 
@@ -130,31 +126,31 @@ new LumosaicGallery("lumosaic", images).init({
 
 ### Row Height Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `rowHeightSM` | float | `0.25` | Height/width desired row ratio for mobile devices (screen width < 768px) |
-| `rowHeightMD` | float | `0.2` | Height/width desired row ratio for medium devices (screen width >= 768px and < 1024px) |
-| `rowHeightXL` | float | `0.18` | Height/width desired row ratio for extra large devices (screen width >= 1024px) |
-| `rowHeight` | float | `none` | Height/width desired row ratio for all screen sizes (overwrites SM, MD and XL options) |
+| Option        | Type  | Default | Description                                                                            |
+| ------------- | ----- | ------- | -------------------------------------------------------------------------------------- |
+| `rowHeightSM` | float | `0.25`  | Height/width desired row ratio for mobile devices (screen width < 768px)               |
+| `rowHeightMD` | float | `0.2`   | Height/width desired row ratio for medium devices (screen width >= 768px and < 1024px) |
+| `rowHeightXL` | float | `0.18`  | Height/width desired row ratio for extra large devices (screen width >= 1024px)        |
+| `rowHeight`   | float | `none`  | Height/width desired row ratio for all screen sizes (overwrites SM, MD and XL options) |
 
 ### Image Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `shouldRetrieveWidthAndHeight` | boolean | `false` | If `true`, automatically retrieves image dimensions from the image file when width and height are not provided |
-| `fallbackImageWidth` | integer | `1000` | Fallback width in pixels used when image dimensions cannot be retrieved |
-| `fallbackImageHeight` | integer | `1000` | Fallback height in pixels used when image dimensions cannot be retrieved |
-| `maxImageRatio` | float | `1.6` | Maximum width/height ratio allowed for images. Images exceeding this ratio will have their width adjusted to fit within the limit |
-| `minImageRatio` | float | `0.65` | Minimum width/height ratio allowed for images. Images below this ratio will have their width adjusted to fit within the limit |
+| Option                         | Type    | Default | Description                                                                                                                       |
+| ------------------------------ | ------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `shouldRetrieveWidthAndHeight` | boolean | `false` | If `true`, automatically retrieves image dimensions from the image file when width and height are not provided                    |
+| `fallbackImageWidth`           | integer | `1000`  | Fallback width in pixels used when image dimensions cannot be retrieved                                                           |
+| `fallbackImageHeight`          | integer | `1000`  | Fallback height in pixels used when image dimensions cannot be retrieved                                                          |
+| `maxImageRatio`                | float   | `1.6`   | Maximum width/height ratio allowed for images. Images exceeding this ratio will have their width adjusted to fit within the limit |
+| `minImageRatio`                | float   | `0.65`  | Minimum width/height ratio allowed for images. Images below this ratio will have their width adjusted to fit within the limit     |
 
 ### Layout Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxRows` | integer | `0` | Maximum number of rows to display. Set to `0` for no limit |
-| `stretchLastRow` | boolean | `true` | If `true`, stretches the last row to fill the container by redistributing images from previous rows if needed |
-| `shuffleImages` | boolean | `false` | If `true`, shuffles images randomly before rendering the gallery |
-| `gap` | integer | `4` | Gap in pixels between images (horizontal) and between rows (vertical) |
+| Option           | Type    | Default | Description                                                                                                   |
+| ---------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `maxRows`        | integer | `0`     | Maximum number of rows to display. Set to `0` for no limit                                                    |
+| `stretchLastRow` | boolean | `true`  | If `true`, stretches the last row to fill the container by redistributing images from previous rows if needed |
+| `shuffleImages`  | boolean | `false` | If `true`, shuffles images randomly before rendering the gallery                                              |
+| `gap`            | integer | `4`     | Gap in pixels between images (horizontal) and between rows (vertical)                                         |
 
 ## Methods
 
@@ -163,15 +159,17 @@ new LumosaicGallery("lumosaic", images).init({
 Initializes the gallery with the given options.
 
 **Parameters:**
-- `options` (object, optional) - Configuration options for the gallery
+
+-   `options` (object, optional) - Configuration options for the gallery
 
 **Returns:** The gallery instance (for method chaining)
 
 **Example:**
+
 ```javascript
-const gallery = new LumosaicGallery("lumosaic", images).init({
+const gallery = new Lumosaic("lumosaic", images).init({
     maxRows: 3,
-    gap: 10
+    gap: 10,
 })
 ```
 
@@ -182,6 +180,7 @@ Shuffles the images in the gallery and re-renders.
 **Parameters:** None
 
 **Example:**
+
 ```javascript
 gallery.shuffleImages()
 ```
@@ -191,13 +190,13 @@ gallery.shuffleImages()
 Replaces the images in the gallery with new images.
 
 **Parameters:**
-- `images` (array) - New array of images (can be objects, strings, or element ID)
+
+-   `images` (array) - New array of images (can be objects, strings, or element ID)
 
 **Example:**
+
 ```javascript
-const newImages = [
-    { src: "new-image.jpg", width: 800, height: 600 }
-]
+const newImages = [{ src: "new-image.jpg", width: 800, height: 600 }]
 gallery.replaceImages(newImages)
 ```
 
@@ -206,13 +205,15 @@ gallery.replaceImages(newImages)
 Updates the gallery configuration with new options and re-renders the gallery.
 
 **Parameters:**
-- `options` (object) - New configuration options (will be merged with existing options)
+
+-   `options` (object) - New configuration options (will be merged with existing options)
 
 **Example:**
+
 ```javascript
 gallery.changeOptions({
     gap: 20,
-    maxRows: 5
+    maxRows: 5,
 })
 ```
 
@@ -220,16 +221,17 @@ gallery.changeOptions({
 
 When using an array of objects, each image object can have the following properties:
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `src` | string | Yes | Full-size image URL |
-| `preview` | string | No | Preview/thumbnail URL (defaults to `src` if not provided) |
-| `width` | integer | Recommended | Image width in pixels |
-| `height` | integer | Recommended | Image height in pixels |
-| `alt` | string | No | Alt text for the image |
-| `title` | string | No | Title attribute for the image |
+| Property  | Type    | Required    | Description                                               |
+| --------- | ------- | ----------- | --------------------------------------------------------- |
+| `src`     | string  | Yes         | Full-size image URL                                       |
+| `preview` | string  | No          | Preview/thumbnail URL (defaults to `src` if not provided) |
+| `width`   | integer | Recommended | Image width in pixels                                     |
+| `height`  | integer | Recommended | Image height in pixels                                    |
+| `alt`     | string  | No          | Alt text for the image                                    |
+| `title`   | string  | No          | Title attribute for the image                             |
 
 **Example:**
+
 ```javascript
 {
     src: "https://example.com/full-size.jpg",
@@ -244,9 +246,10 @@ When using an array of objects, each image object can have the following propert
 ## Browser Support
 
 Lumosaic works in all modern browsers that support:
-- ES6 Classes
-- `fetch` API (for automatic dimension detection)
-- CSS Flexbox
+
+-   ES6 Classes
+-   `fetch` API (for automatic dimension detection)
+-   CSS Flexbox
 
 ## License
 
@@ -254,7 +257,6 @@ Released under the [MIT License](LICENSE).
 
 ## Links
 
-- [Documentation & Demo](https://lumosaic.syntheticsymbiosis.com)
-- [GitHub Repository](https://github.com/volkar/lumosaic)
-- [Latest Release](https://github.com/volkar/lumosaic/releases/latest)
-
+-   [Documentation & Demo](https://lumosaic.syntheticsymbiosis.com)
+-   [GitHub Repository](https://github.com/volkar/lumosaic)
+-   [Latest Release](https://github.com/volkar/lumosaic/releases/latest)
