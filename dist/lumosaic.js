@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.0.1
+ * Lumosaic 1.0.2
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -8,7 +8,7 @@
  * Released under the MIT License
  */
 class Lumosaic {
-    constructor(galleryId, imagesSource, options = {}) {
+    constructor(galleryId, imagesSource) {
         // Default config
         this.config = {
             rowHeightSM: 0.25,
@@ -26,14 +26,12 @@ class Lumosaic {
         }
 
         // Class variables
-        this.gallery = document.getElementById(galleryId)
+        this.galleryID = galleryId
         this.imagesSource = imagesSource
         this.images = []
         this.targetRowHeight = null
-
-        if (!this.gallery) {
-            return
-        }
+        this.lastRenderedScreenSize = null
+        this.gallery = null
     }
 
     replaceImages(images) {
@@ -352,10 +350,13 @@ class Lumosaic {
 
         if (screenWidth >= 1024) {
             this.targetRowHeight = this.config.rowHeightXL * containerWidth
+            this.lastRenderedScreenSize = "xl"
         } else if (screenWidth >= 768) {
             this.targetRowHeight = this.config.rowHeightMD * containerWidth
+            this.lastRenderedScreenSize = "md"
         } else {
             this.targetRowHeight = this.config.rowHeightSM * containerWidth
+            this.lastRenderedScreenSize = "sm"
         }
 
         const rows = this._computeRows(this.images, containerWidth)
@@ -425,6 +426,14 @@ class Lumosaic {
 
     async init(userConfig = {}) {
 
+        // Get gallery wrapper
+        this.gallery = document.getElementById(this.galleryID)
+
+        if (!this.gallery) {
+            return
+        }
+
+        // Merge user options with defaults
         this._mergeOptions(userConfig)
 
         // Add loading spinner
@@ -443,13 +452,20 @@ class Lumosaic {
         // Remove loading spinner
         this.gallery.classList.remove("lumosaic-loading")
 
-        // Rerender on window resize with 100ms timeout
-        let resizeTimeout
+        // Rerender gallery on window resize
         window.addEventListener("resize", () => {
-            clearTimeout(resizeTimeout)
-            resizeTimeout = setTimeout(() => {
+            const screenWidth = window.innerWidth
+
+            if (screenWidth >= 1024 && this.lastRenderedScreenSize !== "xl") {
                 this._renderLumosaicGallery()
-            }, 100)
+                this.lastRenderedScreenSize = "xl"
+            } else if (screenWidth >= 768 && this.lastRenderedScreenSize !== "md") {
+                this._renderLumosaicGallery()
+                this.lastRenderedScreenSize = "md"
+            } else if (this.lastRenderedScreenSize !== "sm") {
+                this._renderLumosaicGallery()
+                this.lastRenderedScreenSize = "sm"
+            }
         })
 
         return this
