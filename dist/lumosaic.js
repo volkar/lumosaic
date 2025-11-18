@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.0.3
+ * Lumosaic 1.0.4
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -366,6 +366,7 @@ class Lumosaic {
             const rowLayout = this._calculateRowLayout(row, containerWidth, lastRow)
             const rowDiv = document.createElement("div")
             rowDiv.className = "lumosaic-row"
+            rowDiv.style.aspectRatio = containerWidth / rowLayout[0].displayHeight
 
             rowLayout.forEach((img) => {
                 const itemDiv = document.createElement("div")
