@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.0.2
+ * Lumosaic 1.0.3
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -250,7 +250,7 @@ class Lumosaic {
                 // Image still fits in current row
                 currentRow.push(img)
                 currentRowWidth += scaledWidth
-            } else if (projectedWidth > containerWidth && (projectedWidth - containerWidth < containerWidth - currentRowWidth)) {
+            } else if (projectedWidth > containerWidth && projectedWidth - containerWidth < containerWidth - currentRowWidth) {
                 // Image does not fit, but overlap is acceptable
                 currentRow.push(img)
                 currentRowWidth += scaledWidth
@@ -267,7 +267,6 @@ class Lumosaic {
                 currentRow = [img]
                 currentRowWidth = scaledWidth
             }
-
         }
 
         // Last row logic
@@ -367,14 +366,14 @@ class Lumosaic {
             const rowLayout = this._calculateRowLayout(row, containerWidth, lastRow)
             const rowDiv = document.createElement("div")
             rowDiv.className = "lumosaic-row"
-            rowDiv.style.height = `${rowLayout[0].displayHeight}px`
 
             rowLayout.forEach((img) => {
                 const itemDiv = document.createElement("div")
                 itemDiv.className = "lumosaic-item"
-                itemDiv.style.flexBasis = `${img.displayWidth}px`
+                const percentWidth = (img.displayWidth / containerWidth) * 100
+                itemDiv.style.flexBasis = `${percentWidth}%`
                 itemDiv.style.flexGrow = "0"
-                itemDiv.style.flexShrink = "0"
+                itemDiv.style.flexShrink = "1"
 
                 if (rowLayout.indexOf(img) < rowLayout.length - 1) {
                     // Apply horizontal gap to element
@@ -385,8 +384,6 @@ class Lumosaic {
                 imgEl.src = img.preview
                 if (img.alt) {
                     imgEl.alt = img.alt
-                } else {
-                    imgEl.alt = "Gallery image"
                 }
                 imgEl.loading = "lazy"
 
@@ -425,7 +422,6 @@ class Lumosaic {
     }
 
     async init(userConfig = {}) {
-
         // Get gallery wrapper
         this.gallery = document.getElementById(this.galleryID)
 
@@ -459,10 +455,10 @@ class Lumosaic {
             if (screenWidth >= 1024 && this.lastRenderedScreenSize !== "xl") {
                 this._renderLumosaicGallery()
                 this.lastRenderedScreenSize = "xl"
-            } else if (screenWidth >= 768 && this.lastRenderedScreenSize !== "md") {
+            } else if (screenWidth >= 768 && screenWidth < 1024 && this.lastRenderedScreenSize !== "md") {
                 this._renderLumosaicGallery()
                 this.lastRenderedScreenSize = "md"
-            } else if (this.lastRenderedScreenSize !== "sm") {
+            } else if (screenWidth < 768 && this.lastRenderedScreenSize !== "sm") {
                 this._renderLumosaicGallery()
                 this.lastRenderedScreenSize = "sm"
             }
