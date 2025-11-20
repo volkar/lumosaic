@@ -145,12 +145,13 @@ new Lumosaic("lumosaic", images).init({
 
 ### Layout Options
 
-| Option           | Type    | Default | Description                                                                                                   |
-| ---------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------- |
-| `maxRows`        | integer | `0`     | Maximum number of rows to display. Set to `0` for no limit                                                    |
-| `stretchLastRow` | boolean | `true`  | If `true`, stretches the last row to fill the container by redistributing images from previous rows if needed |
-| `shuffleImages`  | boolean | `false` | If `true`, shuffles images randomly before rendering the gallery                                              |
-| `gap`            | integer | `4`     | Gap in pixels between images (horizontal) and between rows (vertical)                                         |
+| Option               | Type    | Default | Description                                                                                                   |
+| -------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `maxRows`            | integer | `0`     | Maximum number of rows to display. Set to `0` for no limit                                                    |
+| `stretchLastRow`     | boolean | `true`  | If `true`, stretches the last row to fill the container by redistributing images from previous rows if needed |
+| `shuffleImages`      | boolean | `false` | If `true`, shuffles images randomly before rendering the gallery                                              |
+| `gap`                | integer | `4`     | Gap in pixels between images (horizontal) and between rows(vertical)                                          |
+| `observeWindowWidth` | boolean | `false` | Gallery re-render in response to window or gallery width changes                                              |
 
 ## Methods
 
@@ -215,6 +216,18 @@ gallery.changeOptions({
     gap: 20,
     maxRows: 5,
 })
+```
+
+### `destroy()`
+
+Destroys the gallery and removes it from the DOM.
+
+**Parameters:** None
+
+**Example:**
+
+```javascript
+gallery.destroy()
 ```
 
 ## Image Object Format

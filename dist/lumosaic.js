@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.0.4
+ * Lumosaic 1.1.0
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -7,8 +7,9 @@
  *
  * Released under the MIT License
  */
+
 class Lumosaic {
-    constructor(galleryId, imagesSource) {
+    constructor(galleryID, imagesSource) {
         // Default config
         this.config = {
             rowHeightSM: 0.25,
@@ -23,215 +24,268 @@ class Lumosaic {
             stretchLastRow: true,
             shuffleImages: false,
             gap: 4,
+            observeWindowWidth: true
         }
 
-        // Class variables
-        this.galleryID = galleryId
-        this.imagesSource = imagesSource
-        this.images = []
-        this.targetRowHeight = null
-        this.lastRenderedScreenSize = null
+        // Class properties
+        this.params = { galleryID, imagesSource }
         this.gallery = null
+        this.images = []
+        this.lastRenderedScreenSize = null
+        this.resizeObserver = null
+    }
+
+    // --- Public functions ---
+
+    async init(userConfig = {}) {
+        // Get gallery wrapper
+        this.gallery = document.getElementById(this.params.galleryID)
+        if (!this.gallery) return
+
+        // Merge user options with defaults
+        this._mergeOptions(userConfig)
+
+        // Add loading spinner
+        this.gallery.classList.add('lumosaic-loading')
+
+        // Gather images info from imageSource
+        await this._processParams()
+
+        // Render gallery
+        if (this.config.shuffleImages) {
+            this.shuffleImages()
+        } else {
+            this._renderGallery()
+        }
+
+        this.lastRenderedScreenSize = this._getObservedWidth()
+
+        // Remove loading spinner
+        this.gallery.classList.remove('lumosaic-loading')
+
+        // Rerender gallery on window resize
+        this._initResizeObserver()
+
+        return this
     }
 
     replaceImages(images) {
-        this.imagesSource = images
-        this.images = []
-        this._parseImagesSource().then(() => {
-            this._renderLumosaicGallery()
-        })
+        // Set new imageSource param, then rerender gallery
+        this.params.imagesSource = images
+        this._processParams().then(() => this._renderGallery())
     }
 
     shuffleImages() {
+        // Shuffle images array and rerender gallery
         this.images.sort(() => Math.random() - 0.5)
-        this._renderLumosaicGallery()
+        this._renderGallery()
     }
 
     changeOptions(options) {
-        // Merge options
+        // Merge new options and rerender gallery
         this._mergeOptions(options)
-        // Calculate image dimensions
-        this._calculateImageDimensions()
-        // Render gallery with new options
-        this._renderLumosaicGallery()
+        this._renderGallery()
     }
 
-    async _parseImagesSource() {
-        if (Array.isArray(this.imagesSource)) {
-            for (const img of this.imagesSource) {
-                if (typeof img === "string") {
-                    // Array of strings, only url present
-                    this.images.push(await this._normalizeImageData({ src: img }))
-                } else if (typeof img === "object") {
-                    // Array of objects, normalize and add
-                    this.images.push(await this._normalizeImageData(img))
-                }
-            }
-        } else if (typeof this.imagesSource === "string") {
-            // Wrapper for img elements
-            const srcWrapper = document.getElementById(this.imagesSource)
-            const elements = srcWrapper.querySelectorAll("img")
-
-            for (const img of elements) {
-                const imgData = {
-                    preview: img.src,
-                    width: img.naturalWidth,
-                    height: img.naturalHeight,
-                }
-                if (img.dataset.preview) {
-                    imgData.preview = img.dataset.preview
-                }
-                if (img.dataset.src) {
-                    imgData.src = img.dataset.src
-                }
-                if (img.dataset.width) {
-                    imgData.width = parseInt(img.dataset.width)
-                }
-                if (img.dataset.height) {
-                    imgData.height = parseInt(img.dataset.height)
-                }
-                this.images.push(await this._normalizeImageData(imgData))
-            }
-
-            // Remove src wrapper from DOM
-            srcWrapper.remove()
+    destroy() {
+        // Disconnect observer and destroy gallery
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect()
         }
+        this.gallery = null
+    }
+
+    // --- Private functions ---
+
+    _initResizeObserver() {
+        // Triggers a re-render of the gallery layout when a resize is detected.
+        this.resizeObserver = new ResizeObserver(() => {
+            const observedWidth = this._getObservedWidth()
+
+            if (observedWidth && this.lastRenderedScreenSize !== observedWidth) {
+                this._renderGallery()
+                this.lastRenderedScreenSize = observedWidth
+            }
+        })
+
+        if (this.config.observeWindowWidth) {
+            // Observe window (body)
+            this.resizeObserver.observe(document.body)
+        } else {
+            // Observe gallery
+            this.resizeObserver.observe(this.gallery)
+        }
+    }
+
+    _getObservedWidth() {
+        // Returns the current observed width based on config (window width or gallery container width)
+        let observedWidth
+        if (this.config.observeWindowWidth) {
+            observedWidth = window.innerWidth
+        } else {
+            observedWidth = this.gallery.offsetWidth
+        }
+
+        if (observedWidth && observedWidth >= 1024) {
+            return 'xl'
+        } else if (observedWidth && observedWidth >= 768 && observedWidth < 1024) {
+            return 'md'
+        } else if (observedWidth && observedWidth < 768) {
+            return 'sm'
+        }
+        return false
+    }
+
+    async _processParams() {
+        // Processes and normalizes input images from either an array or a DOM element source.
+        this.images = []
+        let rawList = []
+
+        // Unify input into a temporary array
+        if (Array.isArray(this.params.imagesSource)) {
+            rawList = this.params.imagesSource
+        } else if (typeof this.params.imagesSource === 'string') {
+            const srcWrapper = document.getElementById(this.params.imagesSource)
+            if (srcWrapper) {
+                const elements = srcWrapper.querySelectorAll('img')
+                rawList = Array.from(elements).map((img) => ({
+                    preview: img.dataset.preview || img.src,
+                    src: img.dataset.src || img.src,
+                    width: parseInt(img.dataset.width || img.naturalWidth),
+                    height: parseInt(img.dataset.height || img.naturalHeight)
+                }))
+                srcWrapper.remove()
+            }
+        }
+
+        // Parallel processing with Promise.all
+        const promises = rawList.map((img) => {
+            const imgObj = typeof img === 'string' ? { src: img } : img
+            return this._normalizeImageData(imgObj)
+        })
+
+        this.images = await Promise.all(promises)
     }
 
     async _normalizeImageData(img) {
-        if (img.url && !img.src) {
-            // No src, use url
-            img.src = img.url
-        }
-        if (img.src && !img.preview) {
-            // No preview, use src
-            img.preview = img.src
-        }
-        if (img.preview && !img.src) {
-            // No src, use preview
-            img.src = img.preview
-        }
+        // Normalizes a single image data object, ensuring required properties are correct.
+        if (img.url && !img.src) img.src = img.url
+        if (img.src && !img.preview) img.preview = img.src
+        if (img.preview && !img.src) img.src = img.preview
+
         if (!img.width || !img.height) {
-            // No dimensions, try to get image data
-            let result = { width: 0, height: 0 }
-
-            if (this.config.shouldRetrieveWidthAndHeight === true) {
-                result = await this._getImageSizeFromUrl(img.src)
+            if (this.config.shouldRetrieveWidthAndHeight) {
+                try {
+                    const result = await this._getImageSizeFromUrl(img.src)
+                    img.width = result.width
+                    img.height = result.height
+                } catch (e) {
+                    console.warn(`Lumosaic: Could not fetch size for ${img.src}`, e)
+                    img.width = 0
+                    img.height = 0
+                }
+            } else {
+                img.width = 0
+                img.height = 0
             }
-
-            img.width = result.width
-            img.height = result.height
         }
 
-        // Set src width and height (will be recalculated later based on settings)
         img.srcWidth = img.width
         img.srcHeight = img.height
-        // Clear
-        img.width = 0
-        img.height = 0
-
         return img
     }
 
-    _calculateImageDimensions() {
-        this.images.forEach((img) => {
-            let calculatedWidth = img.srcWidth
-            let calculatedHeight = img.srcHeight
-
-            // If no width and height, use fallback values
-            if (calculatedWidth === 0) {
-                calculatedWidth = this.config.fallbackImageWidth
-            }
-            if (calculatedHeight === 0) {
-                calculatedHeight = this.config.fallbackImageHeight
-            }
-
-            // Limit width/height ratio
-            if (calculatedWidth / calculatedHeight > this.config.maxImageRatio) {
-                calculatedWidth = this.config.maxImageRatio * calculatedHeight
-            } else if (calculatedWidth / calculatedHeight < this.config.minImageRatio) {
-                calculatedWidth = this.config.minImageRatio * calculatedHeight
-            }
-
-            // Set width and height
-            img.width = calculatedWidth
-            img.height = calculatedHeight
-        })
-    }
-
     async _getImageSizeFromUrl(url) {
-        // Fetch first 64KB of file (enough for metadata)
-        const res = await fetch(url, { headers: { Range: "bytes=0-65535" } })
+        // Constants for file signatures
+        const SIG = {
+            PNG: 0x89504e47,
+            PNG_END: 0x0d0a1a0a,
+            JPEG_START: 0xffd8,
+            WEBP_RIFF: 0x52494646,
+            WEBP_WEBP: 0x57454250,
+            VP8: 0x56503820,
+            VP8L: 0x5650384c,
+            VP8X: 0x56503858
+        }
+
+        const res = await fetch(url, { headers: { Range: 'bytes=0-65535' } })
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
+
         const buffer = await res.arrayBuffer()
         const view = new DataView(buffer)
 
-        // ---- PNG ----
-        if (
-            view.getUint32(0) === 0x89504e47 && // "\x89PNG"
-            view.getUint32(4) === 0x0d0a1a0a
-        ) {
-            const width = view.getUint32(16)
-            const height = view.getUint32(20)
-            return { width, height, type: "png" }
+        // PNG
+        if (view.getUint32(0) === SIG.PNG && view.getUint32(4) === SIG.PNG_END) {
+            return {
+                width: view.getUint32(16),
+                height: view.getUint32(20),
+                type: 'png'
+            }
         }
 
-        // ---- JPEG ----
-        if (view.getUint16(0) === 0xffd8) {
+        // JPEG
+        if (view.getUint16(0) === SIG.JPEG_START) {
             let offset = 2
             while (offset < view.byteLength) {
                 if (view.getUint8(offset) !== 0xff) break
                 const marker = view.getUint8(offset + 1)
                 const length = view.getUint16(offset + 2)
-                // SOF0..SOF15 markers store size
-                if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-                    const height = view.getUint16(offset + 5)
-                    const width = view.getUint16(offset + 7)
-                    return { width, height, type: "jpeg" }
+
+                // SOF0..SOF15 (Start Of Frame), skipping DHT, DAC, etc.
+                if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+                    return {
+                        height: view.getUint16(offset + 5),
+                        width: view.getUint16(offset + 7),
+                        type: 'jpeg'
+                    }
                 }
                 offset += 2 + length
             }
-            // Could not find JPEG size marker
         }
 
-        // ---- WebP ----
-        if (view.getUint32(0, false) === 0x52494646 && view.getUint32(8, false) === 0x57454250) {
-            // "RIFF....WEBP"
+        // WebP
+        if (view.getUint32(0, false) === SIG.WEBP_RIFF && view.getUint32(8, false) === SIG.WEBP_WEBP) {
             let offset = 12
             while (offset < view.byteLength) {
                 const chunk = view.getUint32(offset, false)
                 const size = view.getUint32(offset + 4, true)
-                if (chunk === 0x56503820) {
-                    // "VP8"
-                    // Simple lossy WebP
+
+                if (chunk === SIG.VP8) {
                     const frame = offset + 10
-                    const width = view.getUint16(frame + 6, true) & 0x3fff
-                    const height = view.getUint16(frame + 8, true) & 0x3fff
-                    return { width, height, type: "webp" }
-                } else if (chunk === 0x5650384c) {
-                    // "VP8L" (lossless)
+                    return {
+                        width: view.getUint16(frame + 6, true) & 0x3fff,
+                        height: view.getUint16(frame + 8, true) & 0x3fff,
+                        type: 'webp'
+                    }
+                } else if (chunk === SIG.VP8L) {
                     const b0 = view.getUint8(offset + 8)
                     const b1 = view.getUint8(offset + 9)
                     const b2 = view.getUint8(offset + 10)
                     const b3 = view.getUint8(offset + 11)
                     const width = 1 + (((b1 & 0x3f) << 8) | b0)
                     const height = 1 + (((b3 & 0xf) << 10) | (b2 << 2) | ((b1 & 0xc0) >> 6))
-                    return { width, height, type: "webp" }
-                } else if (chunk === 0x56503858) {
-                    // "VP8X" (extended)
-                    const width = 1 + view.getUint24(offset + 12, true)
-                    const height = 1 + view.getUint24(offset + 15, true)
-                    return { width, height, type: "webp" }
+                    return { width, height, type: 'webp' }
+                } else if (chunk === SIG.VP8X) {
+                    // Using internal helper instead of modifying DataView prototype
+                    const width = 1 + this._getUint24(view, offset + 12, true)
+                    const height = 1 + this._getUint24(view, offset + 15, true)
+                    return { width, height, type: 'webp' }
                 }
-                offset += 8 + size + (size % 2) // align to even byte
+                offset += 8 + size + (size % 2)
             }
-
-            // Could not find WebP size chunk
-            return { width: 0, height: 0, type: "webp" }
         }
 
-        // Unsupported image format
-        return { width: 0, height: 0, type: "unknown" }
+        // Unsupported format
+        return { width: 0, height: 0, type: 'unknown' }
+    }
+
+    _getUint24(view, offset, littleEndian) {
+        // Helper for reading 3-byte unsigned int
+        if (littleEndian) {
+            return view.getUint8(offset) | (view.getUint8(offset + 1) << 8) | (view.getUint8(offset + 2) << 16)
+        } else {
+            return (view.getUint8(offset) << 16) | (view.getUint8(offset + 1) << 8) | view.getUint8(offset + 2)
+        }
     }
 
     _computeRows(images, containerWidth) {
@@ -239,9 +293,8 @@ class Lumosaic {
         let currentRow = []
         let currentRowWidth = 0
 
-        for (let i = 0; i < images.length; i++) {
-            const img = images[i]
-            const aspectRatio = img.width / img.height
+        for (const img of images) {
+            const aspectRatio = img.height > 0 ? img.width / img.height : 1
             const scaledWidth = aspectRatio * this.targetRowHeight
 
             const projectedWidth = currentRowWidth + scaledWidth + currentRow.length * this.config.gap
@@ -323,7 +376,7 @@ class Lumosaic {
                 row = row.map((img) => ({
                     ...img,
                     width: img.width * shrinkRatio,
-                    height: img.height,
+                    height: img.height
                 }))
                 rowHeight = this.targetRowHeight
             }
@@ -338,55 +391,82 @@ class Lumosaic {
         return row.map((img) => ({
             ...img,
             displayWidth: (img.width / img.height) * rowHeight,
-            displayHeight: rowHeight,
+            displayHeight: rowHeight
         }))
     }
 
-    _renderLumosaicGallery() {
-        // Calculate target row height based on screen size
-        const screenWidth = window.innerWidth
+    _renderGallery() {
+        // Recalculate image dimensions based on current config
+        this.images.forEach((img) => {
+            let calculatedWidth = img.srcWidth
+            let calculatedHeight = img.srcHeight
+
+            // If no width and height, use fallback values
+            if (calculatedWidth === 0) {
+                calculatedWidth = this.config.fallbackImageWidth
+            }
+            if (calculatedHeight === 0) {
+                calculatedHeight = this.config.fallbackImageHeight
+            }
+
+            // Limit width/height ratio
+            if (calculatedWidth / calculatedHeight > this.config.maxImageRatio) {
+                calculatedWidth = this.config.maxImageRatio * calculatedHeight
+            } else if (calculatedWidth / calculatedHeight < this.config.minImageRatio) {
+                calculatedWidth = this.config.minImageRatio * calculatedHeight
+            }
+
+            // Set width and height
+            img.width = calculatedWidth
+            img.height = calculatedHeight
+        })
+
+        // Calculate target row height based on observed width
+        const observedWidth = this._getObservedWidth()
         const containerWidth = this.gallery.offsetWidth
 
-        if (screenWidth >= 1024) {
+        if (observedWidth === 'xl') {
             this.targetRowHeight = this.config.rowHeightXL * containerWidth
-            this.lastRenderedScreenSize = "xl"
-        } else if (screenWidth >= 768) {
+        } else if (observedWidth === 'md') {
             this.targetRowHeight = this.config.rowHeightMD * containerWidth
-            this.lastRenderedScreenSize = "md"
         } else {
             this.targetRowHeight = this.config.rowHeightSM * containerWidth
-            this.lastRenderedScreenSize = "sm"
         }
+        this.lastRenderedScreenSize = observedWidth
 
         const rows = this._computeRows(this.images, containerWidth)
-        this.gallery.innerHTML = ""
+
+        // Use DocumentFragment to minimize Reflows
+        const fragment = document.createDocumentFragment()
 
         rows.forEach((row, rowIndex) => {
+            // Calculate each row layout
             const lastRow = rowIndex === rows.length - 1
             const rowLayout = this._calculateRowLayout(row, containerWidth, lastRow)
-            const rowDiv = document.createElement("div")
-            rowDiv.className = "lumosaic-row"
+            const rowDiv = document.createElement('div')
+            rowDiv.className = 'lumosaic-row'
             rowDiv.style.aspectRatio = containerWidth / rowLayout[0].displayHeight
 
             rowLayout.forEach((img) => {
-                const itemDiv = document.createElement("div")
-                itemDiv.className = "lumosaic-item"
+                // Each image in current row
+                const itemDiv = document.createElement('div')
+                itemDiv.className = 'lumosaic-item'
                 const percentWidth = (img.displayWidth / containerWidth) * 100
                 itemDiv.style.flexBasis = `${percentWidth}%`
-                itemDiv.style.flexGrow = "0"
-                itemDiv.style.flexShrink = "1"
+                itemDiv.style.flexGrow = '0'
+                itemDiv.style.flexShrink = '1'
 
                 if (rowLayout.indexOf(img) < rowLayout.length - 1) {
                     // Apply horizontal gap to element
                     itemDiv.style.marginRight = `${this.config.gap}px`
                 }
 
-                const imgEl = document.createElement("img")
+                const imgEl = document.createElement('img')
                 imgEl.src = img.preview
                 if (img.alt) {
                     imgEl.alt = img.alt
                 }
-                imgEl.loading = "lazy"
+                imgEl.loading = 'lazy'
 
                 // Additional data
                 if (img.src) {
@@ -405,75 +485,23 @@ class Lumosaic {
                 rowDiv.style.marginBottom = `${this.config.gap}px`
             }
 
-            // Append row to gallery
-            this.gallery.appendChild(rowDiv)
+            // Append row to fragment
+            fragment.appendChild(rowDiv)
         })
+
+        // Clear gallery
+        this.gallery.innerHTML = ''
+        // Append fragment to gallery
+        this.gallery.appendChild(fragment)
     }
 
     _mergeOptions(options) {
         if (options.rowHeight) {
             // Overwrite all rowHeight variants
-            options.rowHeightSM = options.rowHeight
-            options.rowHeightMD = options.rowHeight
-            options.rowHeightXL = options.rowHeight
+            options.rowHeightSM = options.rowHeightMD = options.rowHeightXL = options.rowHeight
             // Unset rowHeight
             delete options.rowHeight
         }
         this.config = { ...this.config, ...options }
-    }
-
-    async init(userConfig = {}) {
-        // Get gallery wrapper
-        this.gallery = document.getElementById(this.galleryID)
-
-        if (!this.gallery) {
-            return
-        }
-
-        // Merge user options with defaults
-        this._mergeOptions(userConfig)
-
-        // Add loading spinner
-        this.gallery.classList.add("lumosaic-loading")
-        // Gather images info
-        await this._parseImagesSource()
-        // Calculate image dimensions
-        this._calculateImageDimensions()
-
-        // Render gallery
-        if (this.config.shuffleImages) {
-            this.shuffleImages()
-        } else {
-            this._renderLumosaicGallery()
-        }
-        // Remove loading spinner
-        this.gallery.classList.remove("lumosaic-loading")
-
-        // Rerender gallery on window resize
-        window.addEventListener("resize", () => {
-            const screenWidth = window.innerWidth
-
-            if (screenWidth >= 1024 && this.lastRenderedScreenSize !== "xl") {
-                this._renderLumosaicGallery()
-                this.lastRenderedScreenSize = "xl"
-            } else if (screenWidth >= 768 && screenWidth < 1024 && this.lastRenderedScreenSize !== "md") {
-                this._renderLumosaicGallery()
-                this.lastRenderedScreenSize = "md"
-            } else if (screenWidth < 768 && this.lastRenderedScreenSize !== "sm") {
-                this._renderLumosaicGallery()
-                this.lastRenderedScreenSize = "sm"
-            }
-        })
-
-        return this
-    }
-}
-
-// Helper for reading 3-byte unsigned int
-DataView.prototype.getUint24 = function (offset, littleEndian) {
-    if (littleEndian) {
-        return this.getUint8(offset) | (this.getUint8(offset + 1) << 8) | (this.getUint8(offset + 2) << 16)
-    } else {
-        return (this.getUint8(offset) << 16) | (this.getUint8(offset + 1) << 8) | this.getUint8(offset + 2)
     }
 }
