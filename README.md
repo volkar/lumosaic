@@ -201,7 +201,7 @@ const newImages = [{ src: "new-image.jpg", width: 800, height: 600 }]
 gallery.replaceImages(newImages)
 ```
 
-### `changeOptions(options)`
+### `updateOptions(options)`
 
 Updates the gallery configuration with new options and re-renders the gallery.
 
@@ -212,7 +212,7 @@ Updates the gallery configuration with new options and re-renders the gallery.
 **Example:**
 
 ```javascript
-gallery.changeOptions({
+gallery.updateOptions({
     gap: 20,
     maxRows: 5,
 })

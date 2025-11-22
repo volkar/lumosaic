@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.1.1
+ * Lumosaic 1.1.2
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -10,8 +10,8 @@
 
 class Lumosaic {
     constructor(galleryID, imagesSource) {
-        // Default config
-        this.config = {
+        // Default options
+        this.options = {
             rowHeightSM: 0.25,
             rowHeightMD: 0.2,
             rowHeightXL: 0.18,
@@ -52,7 +52,7 @@ class Lumosaic {
         await this.#processParams()
 
         // Render gallery
-        if (this.config.shuffleImages) {
+        if (this.options.shuffleImages) {
             this.shuffleImages()
         } else {
             this.#renderGallery()
@@ -81,9 +81,9 @@ class Lumosaic {
         this.#renderGallery()
     }
 
-    changeOptions(options) {
+    updateOptions(newOptions) {
         // Merge new options and rerender gallery
-        this.#mergeOptions(options)
+        this.#mergeOptions(newOptions)
         this.#renderGallery()
     }
 
@@ -108,7 +108,7 @@ class Lumosaic {
             }
         })
 
-        if (this.config.observeWindowWidth) {
+        if (this.options.observeWindowWidth) {
             // Observe window (body)
             this.resizeObserver.observe(document.body)
         } else {
@@ -118,9 +118,9 @@ class Lumosaic {
     }
 
     #getObservedWidth() {
-        // Returns the current observed width based on config (window width or gallery container width)
+        // Returns the current observed width based on options (window width or gallery container width)
         let observedWidth
-        if (this.config.observeWindowWidth) {
+        if (this.options.observeWindowWidth) {
             observedWidth = window.innerWidth
         } else {
             observedWidth = this.gallery.offsetWidth
@@ -174,7 +174,7 @@ class Lumosaic {
         if (img.preview && !img.src) img.src = img.preview
 
         if (!img.width || !img.height) {
-            if (this.config.shouldRetrieveWidthAndHeight) {
+            if (this.options.shouldRetrieveWidthAndHeight) {
                 try {
                     const result = await this.#getImageSizeFromUrl(img.src)
                     img.width = result.width
@@ -297,7 +297,7 @@ class Lumosaic {
             const aspectRatio = img.height > 0 ? img.width / img.height : 1
             const scaledWidth = aspectRatio * this.targetRowHeight
 
-            const projectedWidth = currentRowWidth + scaledWidth + currentRow.length * this.config.gap
+            const projectedWidth = currentRowWidth + scaledWidth + currentRow.length * this.options.gap
 
             if (currentRow.length === 0 || projectedWidth < containerWidth) {
                 // Image still fits in current row
@@ -311,7 +311,7 @@ class Lumosaic {
                 // Image does not fit, start new row with image
                 if (currentRow.length > 0) {
                     rows.push([...currentRow])
-                    if (this.config.maxRows && rows.length >= this.config.maxRows) {
+                    if (this.options.maxRows && rows.length >= this.options.maxRows) {
                         // Max rows limit reached
                         currentRow = []
                         break
@@ -324,7 +324,7 @@ class Lumosaic {
 
         // Last row logic
         if (currentRow.length > 0) {
-            if (this.config.stretchLastRow === true) {
+            if (this.options.stretchLastRow === true) {
                 // If single image left, add to prev row
                 if (currentRow.length === 1) {
                     if (rows.length > 0) {
@@ -360,14 +360,14 @@ class Lumosaic {
     }
 
     #calculateRowLayout(row, containerWidth, lastRow = false) {
-        const totalGaps = (row.length - 1) * this.config.gap
+        const totalGaps = (row.length - 1) * this.options.gap
         const availableWidth = containerWidth - totalGaps
 
         const totalAspectRatio = row.reduce((sum, img) => sum + img.width / img.height, 0)
 
         let rowHeight = availableWidth / totalAspectRatio
 
-        if (lastRow === true && this.config.stretchLastRow === true) {
+        if (lastRow === true && this.options.stretchLastRow === true) {
             // Last stretched row
             if (rowHeight > this.targetRowHeight) {
                 // Alter image ratios to fit this height
@@ -380,7 +380,7 @@ class Lumosaic {
                 }))
                 rowHeight = this.targetRowHeight
             }
-        } else if (lastRow === true && this.config.stretchLastRow === false) {
+        } else if (lastRow === true && this.options.stretchLastRow === false) {
             // Last non-stretched row
             if (rowHeight > this.targetRowHeight) {
                 // Don't allow images in last row to be taller than needed
@@ -396,24 +396,24 @@ class Lumosaic {
     }
 
     #renderGallery() {
-        // Recalculate image dimensions based on current config
+        // Recalculate image dimensions based on current options
         this.images.forEach((img) => {
             let calculatedWidth = img.srcWidth
             let calculatedHeight = img.srcHeight
 
             // If no width and height, use fallback values
             if (calculatedWidth === 0) {
-                calculatedWidth = this.config.fallbackImageWidth
+                calculatedWidth = this.options.fallbackImageWidth
             }
             if (calculatedHeight === 0) {
-                calculatedHeight = this.config.fallbackImageHeight
+                calculatedHeight = this.options.fallbackImageHeight
             }
 
             // Limit width/height ratio
-            if (calculatedWidth / calculatedHeight > this.config.maxImageRatio) {
-                calculatedWidth = this.config.maxImageRatio * calculatedHeight
-            } else if (calculatedWidth / calculatedHeight < this.config.minImageRatio) {
-                calculatedWidth = this.config.minImageRatio * calculatedHeight
+            if (calculatedWidth / calculatedHeight > this.options.maxImageRatio) {
+                calculatedWidth = this.options.maxImageRatio * calculatedHeight
+            } else if (calculatedWidth / calculatedHeight < this.options.minImageRatio) {
+                calculatedWidth = this.options.minImageRatio * calculatedHeight
             }
 
             // Set width and height
@@ -426,11 +426,11 @@ class Lumosaic {
         const containerWidth = this.gallery.offsetWidth
 
         if (observedWidth === 'xl') {
-            this.targetRowHeight = this.config.rowHeightXL * containerWidth
+            this.targetRowHeight = this.options.rowHeightXL * containerWidth
         } else if (observedWidth === 'md') {
-            this.targetRowHeight = this.config.rowHeightMD * containerWidth
+            this.targetRowHeight = this.options.rowHeightMD * containerWidth
         } else {
-            this.targetRowHeight = this.config.rowHeightSM * containerWidth
+            this.targetRowHeight = this.options.rowHeightSM * containerWidth
         }
         this.lastRenderedScreenSize = observedWidth
 
@@ -458,7 +458,7 @@ class Lumosaic {
 
                 if (rowLayout.indexOf(img) < rowLayout.length - 1) {
                     // Apply horizontal gap to element
-                    itemDiv.style.marginRight = `${this.config.gap}px`
+                    itemDiv.style.marginRight = `${this.options.gap}px`
                 }
 
                 const imgEl = document.createElement('img')
@@ -482,7 +482,7 @@ class Lumosaic {
 
             if (rowIndex < rows.length - 1) {
                 // Apply vertical gap to row
-                rowDiv.style.marginBottom = `${this.config.gap}px`
+                rowDiv.style.marginBottom = `${this.options.gap}px`
             }
 
             // Append row to fragment
@@ -495,13 +495,13 @@ class Lumosaic {
         this.gallery.appendChild(fragment)
     }
 
-    #mergeOptions(options) {
-        if (options.rowHeight) {
+    #mergeOptions(newOptions) {
+        if (newOptions.rowHeight) {
             // Overwrite all rowHeight variants
-            options.rowHeightSM = options.rowHeightMD = options.rowHeightXL = options.rowHeight
+            newOptions.rowHeightSM = newOptions.rowHeightMD = newOptions.rowHeightXL = newOptions.rowHeight
             // Unset rowHeight
-            delete options.rowHeight
+            delete newOptions.rowHeight
         }
-        this.config = { ...this.config, ...options }
+        this.options = { ...this.options, ...newOptions }
     }
 }
