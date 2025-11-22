@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.1.0
+ * Lumosaic 1.1.1
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -43,28 +43,28 @@ class Lumosaic {
         if (!this.gallery) return
 
         // Merge user options with defaults
-        this._mergeOptions(userConfig)
+        this.#mergeOptions(userConfig)
 
         // Add loading spinner
         this.gallery.classList.add('lumosaic-loading')
 
         // Gather images info from imageSource
-        await this._processParams()
+        await this.#processParams()
 
         // Render gallery
         if (this.config.shuffleImages) {
             this.shuffleImages()
         } else {
-            this._renderGallery()
+            this.#renderGallery()
         }
 
-        this.lastRenderedScreenSize = this._getObservedWidth()
+        this.lastRenderedScreenSize = this.#getObservedWidth()
 
         // Remove loading spinner
         this.gallery.classList.remove('lumosaic-loading')
 
         // Rerender gallery on window resize
-        this._initResizeObserver()
+        this.#initResizeObserver()
 
         return this
     }
@@ -72,19 +72,19 @@ class Lumosaic {
     replaceImages(images) {
         // Set new imageSource param, then rerender gallery
         this.params.imagesSource = images
-        this._processParams().then(() => this._renderGallery())
+        this.#processParams().then(() => this.#renderGallery())
     }
 
     shuffleImages() {
         // Shuffle images array and rerender gallery
         this.images.sort(() => Math.random() - 0.5)
-        this._renderGallery()
+        this.#renderGallery()
     }
 
     changeOptions(options) {
         // Merge new options and rerender gallery
-        this._mergeOptions(options)
-        this._renderGallery()
+        this.#mergeOptions(options)
+        this.#renderGallery()
     }
 
     destroy() {
@@ -97,13 +97,13 @@ class Lumosaic {
 
     // --- Private functions ---
 
-    _initResizeObserver() {
+    #initResizeObserver() {
         // Triggers a re-render of the gallery layout when a resize is detected.
         this.resizeObserver = new ResizeObserver(() => {
-            const observedWidth = this._getObservedWidth()
+            const observedWidth = this.#getObservedWidth()
 
             if (observedWidth && this.lastRenderedScreenSize !== observedWidth) {
-                this._renderGallery()
+                this.#renderGallery()
                 this.lastRenderedScreenSize = observedWidth
             }
         })
@@ -117,7 +117,7 @@ class Lumosaic {
         }
     }
 
-    _getObservedWidth() {
+    #getObservedWidth() {
         // Returns the current observed width based on config (window width or gallery container width)
         let observedWidth
         if (this.config.observeWindowWidth) {
@@ -136,7 +136,7 @@ class Lumosaic {
         return false
     }
 
-    async _processParams() {
+    async #processParams() {
         // Processes and normalizes input images from either an array or a DOM element source.
         this.images = []
         let rawList = []
@@ -161,13 +161,13 @@ class Lumosaic {
         // Parallel processing with Promise.all
         const promises = rawList.map((img) => {
             const imgObj = typeof img === 'string' ? { src: img } : img
-            return this._normalizeImageData(imgObj)
+            return this.#normalizeImageData(imgObj)
         })
 
         this.images = await Promise.all(promises)
     }
 
-    async _normalizeImageData(img) {
+    async #normalizeImageData(img) {
         // Normalizes a single image data object, ensuring required properties are correct.
         if (img.url && !img.src) img.src = img.url
         if (img.src && !img.preview) img.preview = img.src
@@ -176,7 +176,7 @@ class Lumosaic {
         if (!img.width || !img.height) {
             if (this.config.shouldRetrieveWidthAndHeight) {
                 try {
-                    const result = await this._getImageSizeFromUrl(img.src)
+                    const result = await this.#getImageSizeFromUrl(img.src)
                     img.width = result.width
                     img.height = result.height
                 } catch (e) {
@@ -195,7 +195,7 @@ class Lumosaic {
         return img
     }
 
-    async _getImageSizeFromUrl(url) {
+    async #getImageSizeFromUrl(url) {
         // Constants for file signatures
         const SIG = {
             PNG: 0x89504e47,
@@ -267,8 +267,8 @@ class Lumosaic {
                     return { width, height, type: 'webp' }
                 } else if (chunk === SIG.VP8X) {
                     // Using internal helper instead of modifying DataView prototype
-                    const width = 1 + this._getUint24(view, offset + 12, true)
-                    const height = 1 + this._getUint24(view, offset + 15, true)
+                    const width = 1 + this.#getUint24(view, offset + 12, true)
+                    const height = 1 + this.#getUint24(view, offset + 15, true)
                     return { width, height, type: 'webp' }
                 }
                 offset += 8 + size + (size % 2)
@@ -279,7 +279,7 @@ class Lumosaic {
         return { width: 0, height: 0, type: 'unknown' }
     }
 
-    _getUint24(view, offset, littleEndian) {
+    #getUint24(view, offset, littleEndian) {
         // Helper for reading 3-byte unsigned int
         if (littleEndian) {
             return view.getUint8(offset) | (view.getUint8(offset + 1) << 8) | (view.getUint8(offset + 2) << 16)
@@ -288,7 +288,7 @@ class Lumosaic {
         }
     }
 
-    _computeRows(images, containerWidth) {
+    #computeRows(images, containerWidth) {
         const rows = []
         let currentRow = []
         let currentRowWidth = 0
@@ -359,7 +359,7 @@ class Lumosaic {
         return rows
     }
 
-    _calculateRowLayout(row, containerWidth, lastRow = false) {
+    #calculateRowLayout(row, containerWidth, lastRow = false) {
         const totalGaps = (row.length - 1) * this.config.gap
         const availableWidth = containerWidth - totalGaps
 
@@ -395,7 +395,7 @@ class Lumosaic {
         }))
     }
 
-    _renderGallery() {
+    #renderGallery() {
         // Recalculate image dimensions based on current config
         this.images.forEach((img) => {
             let calculatedWidth = img.srcWidth
@@ -422,7 +422,7 @@ class Lumosaic {
         })
 
         // Calculate target row height based on observed width
-        const observedWidth = this._getObservedWidth()
+        const observedWidth = this.#getObservedWidth()
         const containerWidth = this.gallery.offsetWidth
 
         if (observedWidth === 'xl') {
@@ -434,7 +434,7 @@ class Lumosaic {
         }
         this.lastRenderedScreenSize = observedWidth
 
-        const rows = this._computeRows(this.images, containerWidth)
+        const rows = this.#computeRows(this.images, containerWidth)
 
         // Use DocumentFragment to minimize Reflows
         const fragment = document.createDocumentFragment()
@@ -442,7 +442,7 @@ class Lumosaic {
         rows.forEach((row, rowIndex) => {
             // Calculate each row layout
             const lastRow = rowIndex === rows.length - 1
-            const rowLayout = this._calculateRowLayout(row, containerWidth, lastRow)
+            const rowLayout = this.#calculateRowLayout(row, containerWidth, lastRow)
             const rowDiv = document.createElement('div')
             rowDiv.className = 'lumosaic-row'
             rowDiv.style.aspectRatio = containerWidth / rowLayout[0].displayHeight
@@ -495,7 +495,7 @@ class Lumosaic {
         this.gallery.appendChild(fragment)
     }
 
-    _mergeOptions(options) {
+    #mergeOptions(options) {
         if (options.rowHeight) {
             // Overwrite all rowHeight variants
             options.rowHeightSM = options.rowHeightMD = options.rowHeightXL = options.rowHeight
