@@ -6,6 +6,10 @@ Lumosaic is a lightweight JavaScript library that automatically arranges photos 
 
 ![Preview](https://github.com/volkar/lumosaic/blob/main/preview.jpg?raw=true)
 
+## Live demo
+
+See it in action: [lumosaic.syntheticsymbiosis.com](https://lumosaic.syntheticsymbiosis.com)
+
 ## Features
 
 -   **Intelligent Layout** - Automatically arranges images into perfectly aligned rows
@@ -254,6 +258,29 @@ When using an array of objects, each image object can have the following propert
     alt: "Beautiful landscape",
     title: "Photo by John Doe"
 }
+```
+
+## Integration with Obsidium lightbox
+
+You can use Lumosaic with [Obsidium](https://obsidium.syntheticsymbiosis.com) out of the box:
+
+```html
+<div id="lumosaic"></div>
+```
+
+```javascript
+const images = [
+    { src: "https://picsum.photos/800/600?random=1", width: 800, height: 600 },
+    { src: "https://picsum.photos/800/600?random=2", width: 800, height: 600 },
+    { src: "https://picsum.photos/800/800?random=3", width: 800, height: 800 },
+    { src: "https://picsum.photos/600/800?random=4", width: 600, height: 800 },
+    { src: "https://picsum.photos/800/600?random=5", width: 800, height: 600 },
+    { src: "https://picsum.photos/800/800?random=6", width: 800, height: 800 },
+]
+const lumosaic = new Lumosaic("lumosaic", images).init().then(() => {
+    // Bind Obsidium
+    new Obsidium("#lumosaic").init()
+})
 ```
 
 ## Browser Support
