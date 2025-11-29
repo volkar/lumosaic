@@ -1,5 +1,5 @@
 /**
- * Lumosaic 1.1.2
+ * Lumosaic 1.1.3
  * Smart image gallery that automatically arranges photos of any orientation into perfectly aligned rows spanning full screen width
  *
  * https://lumosaic.syntheticsymbiosis.com
@@ -469,11 +469,18 @@ class Lumosaic {
                 imgEl.loading = 'lazy'
 
                 // Additional data
+
                 if (img.src) {
+                    // Expose data-src
                     imgEl.dataset.src = img.src
                 }
                 if (img.title) {
+                    // Expose data-title
                     imgEl.title = img.title
+                }
+                if (img.exif) {
+                    // Expose EXIF data
+                    imgEl.dataset.exif = JSON.stringify(img.exif)
                 }
 
                 itemDiv.appendChild(imgEl)
