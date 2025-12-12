@@ -11,7 +11,7 @@
     flex-grow: 1;
     overflow: hidden;
     position: relative;
-    background-color: #13151a33;
+    background-color: #00000017;
 }
 
 .lumosaic-item:last-child {
@@ -29,6 +29,32 @@
 @media (hover: hover) {
     .lumosaic-item:hover img {
         transform: scale(1.1);
+    }
+}
+
+.lumosaic-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.lumosaic-play-icon svg {
+    width: 10vw;
+    height: auto;
+}
+
+@media (min-width: 768px) {
+    .lumosaic-play-icon svg {
+        width: 7vw;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lumosaic-play-icon svg {
+        width: 5vw;
     }
 }
 
@@ -54,6 +80,7 @@
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }

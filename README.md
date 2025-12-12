@@ -155,6 +155,7 @@ new Lumosaic("lumosaic", images).init({
 | `stretchLastRow`     | boolean | `true`  | If `true`, stretches the last row to fill the container by redistributing images from previous rows if needed |
 | `shuffleImages`      | boolean | `false` | If `true`, shuffles images randomly before rendering the gallery                                              |
 | `gap`                | integer | `4`     | Gap in pixels between images (horizontal) and between rows(vertical)                                          |
+| `playButtonOnVideoCover`                | boolean | `true`     | If `true`, a play button will be displayed on top of video covers                                          |
 | `observeWindowWidth` | boolean | `false` | Gallery re-render in response to window or gallery width changes                                              |
 
 ## Methods
@@ -282,6 +283,8 @@ const lumosaic = new Lumosaic("lumosaic", images).init().then(() => {
     new Obsidium("#lumosaic").init()
 })
 ```
+
+The lightbox supports video display. If the `src` property references a video file, a play button will be rendered centrally on the image cover.
 
 ## Browser Support
 
