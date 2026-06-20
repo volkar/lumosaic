@@ -286,13 +286,11 @@ const lumosaic = new Lumosaic("lumosaic", images).init().then(() => {
 
 The lightbox supports video display. If the `src` property references a video file, a play button will be rendered centrally on the image cover.
 
-## Browser Support
+## ❤️ Support
 
-Lumosaic works in all modern browsers that support:
+Lumosaic is completely free and open-source. If it made your frontend work a little brighter, you can fuel its future updates via the **Sponsor** button or through my [Support Page](https://support.syntheticsymbiosis.com).
 
--   ES6 Classes
--   `fetch` API (for automatic dimension detection)
--   CSS Flexbox
+Your contributions go directly towards project maintenance, late-night caffeine, and I will *definitely* not use them to save up for a 1969 Ford Mustang. Promise.
 
 ## License
 
