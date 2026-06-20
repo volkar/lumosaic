@@ -6,6 +6,10 @@ Lumosaic is a lightweight JavaScript library that automatically arranges photos 
 
 ![Preview](https://github.com/volkar/lumosaic/blob/main/preview.jpg?raw=true)
 
+## Vue 3 / Nuxt 4 version
+
+It's right [here](https://github.com/volkar/lumosaic-vue)!
+
 ## Live demo
 
 See it in action: [lumosaic.syntheticsymbiosis.com](https://lumosaic.syntheticsymbiosis.com)
